@@ -1,0 +1,80 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #e9eef7;
+  background: #0d1726;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+.shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 2rem;
+  background: radial-gradient(circle at top, #1f4264 0, #0d1726 55%);
+}
+
+.hero-card {
+  width: min(680px, 100%);
+  padding: clamp(2rem, 6vw, 4rem);
+  border: 1px solid rgba(180, 214, 245, 0.2);
+  border-radius: 24px;
+  background: rgba(18, 35, 55, 0.9);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  color: #7dd3fc;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1.05;
+}
+
+.intro {
+  max-width: 52ch;
+  color: #b8c8da;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.status {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.status-checking {
+  color: #fef3c7;
+  background: #854d0e;
+}
+
+.status-connected {
+  color: #dcfce7;
+  background: #166534;
+}
+
+.status-unavailable {
+  color: #fee2e2;
+  background: #991b1b;
+}
