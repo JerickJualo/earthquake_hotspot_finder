@@ -1,30 +1,481 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { getHealth } from "./services/api";
+import {
+  ApiError,
+  getClusters,
+  getEarthquakes,
+  getHealth,
+  getProvinceActivity,
+  getReadiness,
+  getSummary,
+} from "./services/api";
 
-function App() {
-  const [backendState, setBackendState] = useState("checking");
+const DEFAULT_FILTERS = {
+  start_date: "2025-01-01",
+  end_date: "2025-12-31",
+  min_magnitude: "",
+  max_magnitude: "",
+  geographic_assignment_status: "",
+};
 
-  useEffect(() => {
-    getHealth()
-      .then(() => setBackendState("connected"))
-      .catch(() => setBackendState("unavailable"));
-  }, []);
+const STATUS_LABELS = {
+  assigned: "Province assigned",
+  offshore_or_unassigned: "Offshore / unassigned",
+  outside_study_scope_candidate: "Outside-scope candidate",
+};
+
+const STATUS_COLORS = {
+  assigned: "#54d6a0",
+  offshore_or_unassigned: "#f2b872",
+  outside_study_scope_candidate: "#f27d92",
+};
+
+function formatNumber(value, digits = 0) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "—";
+  return Number(value).toLocaleString(undefined, {
+    maximumFractionDigits: digits,
+    minimumFractionDigits: digits,
+  });
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(value));
+}
+
+function formatDateTime(value) {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function errorMessage(error) {
+  if (error instanceof ApiError && error.status === 503) {
+    return "The API is running, but the database is not ready. Configure PostgreSQL and import the processed dataset to load live dashboard data.";
+  }
+  return error?.message || "The dashboard could not load data.";
+}
+
+function SummaryCard({ label, value, detail, accent = "blue" }) {
+  return (
+    <article className={`summary-card accent-${accent}`}>
+      <p className="summary-label">{label}</p>
+      <p className="summary-value">{value}</p>
+      <p className="summary-detail">{detail}</p>
+    </article>
+  );
+}
+
+function FilterBar({ draft, setDraft, onSubmit, onReset, loading }) {
+  function update(key, value) {
+    setDraft((current) => ({ ...current, [key]: value }));
+  }
 
   return (
-    <main className="shell">
-      <section className="hero-card">
-        <p className="eyebrow">Phase 2 environment setup</p>
-        <h1>Earthquake Hotspot Finder</h1>
-        <p className="intro">
-          The React and FastAPI foundations are ready. Dataset analytics and the
-          interactive dashboard will be added in later phases.
-        </p>
-        <div className={`status status-${backendState}`}>
-          Backend status: {backendState}
+    <form className="filter-panel" onSubmit={onSubmit}>
+      <div className="filter-heading">
+        <div>
+          <p className="section-kicker">Explore the record set</p>
+          <h2>Shared filters</h2>
         </div>
-      </section>
-    </main>
+        <span className="filter-note">UTC dates · inclusive range</span>
+      </div>
+      <div className="filter-grid">
+        <label>
+          <span>From date</span>
+          <input
+            type="date"
+            value={draft.start_date}
+            onChange={(event) => update("start_date", event.target.value)}
+          />
+        </label>
+        <label>
+          <span>To date</span>
+          <input
+            type="date"
+            value={draft.end_date}
+            onChange={(event) => update("end_date", event.target.value)}
+          />
+        </label>
+        <label>
+          <span>Minimum magnitude</span>
+          <input
+            type="number"
+            min="-10"
+            max="20"
+            step="0.1"
+            placeholder="Any"
+            value={draft.min_magnitude}
+            onChange={(event) => update("min_magnitude", event.target.value)}
+          />
+        </label>
+        <label>
+          <span>Maximum magnitude</span>
+          <input
+            type="number"
+            min="-10"
+            max="20"
+            step="0.1"
+            placeholder="Any"
+            value={draft.max_magnitude}
+            onChange={(event) => update("max_magnitude", event.target.value)}
+          />
+        </label>
+        <label>
+          <span>Geographic scope</span>
+          <select
+            value={draft.geographic_assignment_status}
+            onChange={(event) => update("geographic_assignment_status", event.target.value)}
+          >
+            <option value="">All statuses</option>
+            <option value="assigned">Province assigned</option>
+            <option value="offshore_or_unassigned">Offshore / unassigned</option>
+            <option value="outside_study_scope_candidate">Outside-scope candidates</option>
+          </select>
+        </label>
+        <div className="filter-actions">
+          <button className="primary-button" type="submit" disabled={loading}>
+            {loading ? "Refreshing…" : "Apply filters"}
+          </button>
+          <button className="quiet-button" type="button" onClick={onReset} disabled={loading}>
+            Reset
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
+
+function DistributionBars({ items, labelKey, valueKey, color = "blue", emptyText }) {
+  const max = Math.max(...(items || []).map((item) => Number(item[valueKey]) || 0), 1);
+  if (!items?.length) return <p className="empty-state">{emptyText || "No distribution is available."}</p>;
+
+  return (
+    <div className="bar-list">
+      {items.map((item) => {
+        const value = Number(item[valueKey]) || 0;
+        return (
+          <div className="bar-row" key={String(item[labelKey])}>
+            <div className="bar-label" title={String(item[labelKey])}>
+              {String(item[labelKey])}
+            </div>
+            <div className="bar-track">
+              <div
+                className={`bar-fill bar-${color}`}
+                style={{ width: `${Math.max((value / max) * 100, value ? 3 : 0)}%` }}
+              />
+            </div>
+            <div className="bar-value">{formatNumber(value)}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function MonthlyChart({ items }) {
+  const max = Math.max(...(items || []).map((item) => Number(item.earthquake_count) || 0), 1);
+  if (!items?.length) return <p className="empty-state">No monthly activity is available.</p>;
+
+  return (
+    <div className="monthly-chart" aria-label="Earthquake records by month">
+      {items.map((item) => {
+        const value = Number(item.earthquake_count) || 0;
+        return (
+          <div className="month-column" key={item.month} title={`${item.month}: ${value} records`}>
+            <div className="month-value">{value}</div>
+            <div className="month-track">
+              <div className="month-fill" style={{ height: `${Math.max((value / max) * 100, value ? 4 : 0)}%` }} />
+            </div>
+            <div className="month-label">{item.month.slice(5)}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function CoordinateMap({ assignments }) {
+  const width = 760;
+  const height = 390;
+  const padding = { top: 28, right: 24, bottom: 46, left: 52 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const minLon = 117;
+  const maxLon = 128.5;
+  const minLat = 4;
+  const maxLat = 22;
+  const points = assignments || [];
+  const clusterColors = ["#66d9c2", "#f4b860", "#ff7d9d", "#9b8cff", "#6db5ff", "#d7e27e"];
+
+  function x(longitude) {
+    return padding.left + ((Number(longitude) - minLon) / (maxLon - minLon)) * plotWidth;
+  }
+
+  function y(latitude) {
+    return padding.top + (1 - (Number(latitude) - minLat) / (maxLat - minLat)) * plotHeight;
+  }
+
+  const validPoints = points.filter(
+    (point) => Number.isFinite(Number(point.longitude)) && Number.isFinite(Number(point.latitude)),
+  );
+
+  return (
+    <div className="map-wrap">
+      <svg className="coordinate-map" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Earthquake coordinate map">
+        <rect x="0" y="0" width={width} height={height} rx="18" className="map-background" />
+        {[4, 8, 12, 16, 20].map((latitude) => (
+          <g key={`lat-${latitude}`}>
+            <line x1={padding.left} x2={width - padding.right} y1={y(latitude)} y2={y(latitude)} className="map-grid" />
+            <text x={padding.left - 10} y={y(latitude) + 4} textAnchor="end" className="map-axis-label">{latitude}°N</text>
+          </g>
+        ))}
+        {[118, 121, 124, 127].map((longitude) => (
+          <g key={`lon-${longitude}`}>
+            <line x1={x(longitude)} x2={x(longitude)} y1={padding.top} y2={height - padding.bottom} className="map-grid" />
+            <text x={x(longitude)} y={height - 18} textAnchor="middle" className="map-axis-label">{longitude}°E</text>
+          </g>
+        ))}
+        <text x={padding.left} y={18} className="map-caption">Philippine region coordinate view</text>
+        {validPoints.map((point, index) => {
+          const cluster = Number(point.cluster_label);
+          const color = clusterColors[Number.isFinite(cluster) ? cluster % clusterColors.length : 0];
+          return (
+            <circle
+              key={`${point.event_id || point.source_event_id}-${index}`}
+              cx={x(point.longitude)}
+              cy={y(point.latitude)}
+              r="4.2"
+              fill={color}
+              className="map-point"
+              opacity="0.82"
+            >
+              <title>{`${point.source_event_id || "Event"} · cluster ${point.cluster_label}`}</title>
+            </circle>
+          );
+        })}
+      </svg>
+      <div className="map-legend">
+        <span><i className="legend-dot dot-cluster-a" /> Cluster 0</span>
+        <span><i className="legend-dot dot-cluster-b" /> Cluster 1</span>
+        <span className="map-count">{validPoints.length} plotted records</span>
+      </div>
+      <p className="map-footnote">Coordinates are plotted from the API response; this view is not a basemap or a hazard boundary.</p>
+    </div>
+  );
+}
+
+function ProvinceRanking({ provinces }) {
+  const topProvinces = (provinces || []).slice(0, 10);
+  const max = Math.max(...topProvinces.map((item) => Number(item.earthquake_count) || 0), 1);
+  if (!topProvinces.length) return <p className="empty-state">No province assignments match these filters.</p>;
+
+  return (
+    <div className="ranking-list">
+      {topProvinces.map((province, index) => (
+        <div className="ranking-row" key={province.province_name}>
+          <span className="ranking-number">{String(index + 1).padStart(2, "0")}</span>
+          <span className="ranking-name">{province.province_name}</span>
+          <span className="ranking-bar"><i style={{ width: `${(province.earthquake_count / max) * 100}%` }} /></span>
+          <strong>{formatNumber(province.earthquake_count)}</strong>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function StatusBreakdown({ counts }) {
+  const entries = Object.entries(counts || {});
+  if (!entries.length) return <p className="empty-state">No geographic assignment data.</p>;
+  const total = entries.reduce((sum, [, value]) => sum + Number(value || 0), 0) || 1;
+  return (
+    <div className="status-breakdown">
+      {entries.map(([status, value]) => (
+        <div className="status-item" key={status}>
+          <div className="status-item-heading">
+            <span><i className="legend-dot" style={{ background: STATUS_COLORS[status] || "#9aabc0" }} /> {STATUS_LABELS[status] || status}</span>
+            <strong>{formatNumber(value)}</strong>
+          </div>
+          <div className="status-track"><i style={{ width: `${(Number(value) / total) * 100}%`, background: STATUS_COLORS[status] || "#9aabc0" }} /></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RecentEvents({ events }) {
+  if (!events?.length) return <p className="empty-state">No events match these filters.</p>;
+  return (
+    <div className="table-scroll">
+      <table>
+        <thead><tr><th>UTC time</th><th>Magnitude</th><th>Depth</th><th>Province / status</th></tr></thead>
+        <tbody>
+          {events.map((event) => (
+            <tr key={event.event_id}>
+              <td>{formatDateTime(event.occurred_at)}</td>
+              <td><strong>{formatNumber(event.magnitude, 1)}</strong></td>
+              <td>{event.depth_km === null ? "—" : `${formatNumber(event.depth_km, 1)} km`}</td>
+              <td>{event.province_name || STATUS_LABELS[event.geographic_assignment_status] || "Unassigned"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function App() {
+  const [draftFilters, setDraftFilters] = useState(DEFAULT_FILTERS);
+  const [appliedFilters, setAppliedFilters] = useState(DEFAULT_FILTERS);
+  const [dashboard, setDashboard] = useState(null);
+  const [backendState, setBackendState] = useState("checking");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadDashboard = useCallback(async (filters) => {
+    setLoading(true);
+    setError("");
+    try {
+      const [health, readiness, summary, provinces, clusters, events] = await Promise.all([
+        getHealth(),
+        getReadiness(),
+        getSummary(filters),
+        getProvinceActivity(filters).catch((requestError) => {
+          if (requestError instanceof ApiError && requestError.status === 404) return [];
+          throw requestError;
+        }),
+        getClusters(filters),
+        getEarthquakes(filters, { page: 1, page_size: 8 }),
+      ]);
+      setDashboard({ health, readiness, summary, provinces, clusters, events });
+      setBackendState("connected");
+    } catch (requestError) {
+      setBackendState(requestError instanceof ApiError && requestError.status === 503 ? "database-pending" : "unavailable");
+      setError(errorMessage(requestError));
+      setDashboard(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadDashboard(appliedFilters);
+  }, [appliedFilters, loadDashboard]);
+
+  const summary = dashboard?.summary;
+  const activeRange = useMemo(
+    () => `${formatDate(summary?.date_min_utc)} — ${formatDate(summary?.date_max_utc)}`,
+    [summary],
+  );
+
+  function submitFilters(event) {
+    event.preventDefault();
+    setAppliedFilters({ ...draftFilters });
+  }
+
+  function resetFilters() {
+    setDraftFilters(DEFAULT_FILTERS);
+    setAppliedFilters(DEFAULT_FILTERS);
+  }
+
+  return (
+    <div className="app-shell">
+      <header className="topbar">
+        <a className="brand" href="/" aria-label="Earthquake Hotspot Finder home">
+          <span className="brand-mark"><span /></span>
+          <span><strong>Earthquake</strong> Hotspot Finder</span>
+        </a>
+        <div className="topbar-meta">
+          <span className={`connection-pill connection-${backendState}`}>
+            <i /> {backendState === "connected" ? "API connected" : backendState === "database-pending" ? "Database pending" : backendState === "checking" ? "Connecting" : "API unavailable"}
+          </span>
+          <span className="dataset-pill">USGS · 2025 development dataset</span>
+        </div>
+      </header>
+
+      <main className="dashboard">
+        <section className="dashboard-intro">
+          <div>
+            <p className="eyebrow">Philippine earthquake analytics</p>
+            <h1>Read the pattern.<br /><em>Question the conclusion.</em></h1>
+            <p className="intro-copy">A transparent workspace for exploring where and when earthquake records appear across the Philippines.</p>
+          </div>
+          <div className="intro-note">
+            <span className="note-icon">i</span>
+            <div><strong>Provisional view</strong><br />This dashboard describes the current development dataset. It does not predict earthquakes or measure hazard.</div>
+          </div>
+        </section>
+
+        <FilterBar
+          draft={draftFilters}
+          setDraft={setDraftFilters}
+          onSubmit={submitFilters}
+          onReset={resetFilters}
+          loading={loading}
+        />
+
+        {error && (
+          <section className="error-banner" role="alert">
+            <div><strong>Dashboard data unavailable</strong><p>{error}</p></div>
+            <button className="quiet-button" type="button" onClick={() => loadDashboard(appliedFilters)}>Try again</button>
+          </section>
+        )}
+
+        {loading && !dashboard ? (
+          <section className="loading-panel"><div className="spinner" /><p>Loading the analytical view…</p></section>
+        ) : dashboard ? (
+          <>
+            <section className="summary-grid" aria-label="Summary statistics">
+              <SummaryCard label="Records in view" value={formatNumber(summary.record_count)} detail={activeRange} accent="blue" />
+              <SummaryCard label="Magnitude range" value={`${formatNumber(summary.numeric_summary.magnitude?.min, 1)} — ${formatNumber(summary.numeric_summary.magnitude?.max, 1)}`} detail={`Median ${formatNumber(summary.numeric_summary.magnitude?.median, 1)}`} accent="coral" />
+              <SummaryCard label="Provinces represented" value={formatNumber(summary.assigned_province_count)} detail="ADM2 point assignments" accent="green" />
+              <SummaryCard label="Spatial clusters" value={`K = ${dashboard.clusters.selected_k}`} detail={`${formatNumber(dashboard.clusters.eligible_record_count)} eligible records`} accent="violet" />
+            </section>
+
+            <section className="content-grid map-grid-section">
+              <article className="panel map-panel">
+                <div className="panel-heading"><div><p className="section-kicker">Spatial view</p><h2>Where records cluster</h2></div><span className="metric-chip">Silhouette {formatNumber(dashboard.clusters.silhouette_score, 3)}</span></div>
+                <CoordinateMap assignments={dashboard.clusters.assignments} />
+              </article>
+              <article className="panel status-panel">
+                <div className="panel-heading"><div><p className="section-kicker">Geographic assignment</p><h2>What the boundary tells us</h2></div></div>
+                <p className="panel-copy">Only points intersecting an ADM2 polygon receive a province. Offshore and nearby-country records remain visible as separate statuses.</p>
+                <StatusBreakdown counts={summary.geographic_assignment_counts} />
+                <div className="mini-callout"><strong>{formatNumber(summary.assigned_province_count)}</strong><span>unique provinces represented in the filtered view</span></div>
+              </article>
+            </section>
+
+            <section className="content-grid charts-grid">
+              <article className="panel chart-panel chart-wide"><div className="panel-heading"><div><p className="section-kicker">Temporal distribution</p><h2>Records by month</h2></div><span className="panel-unit">events / month</span></div><MonthlyChart items={summary.monthly_activity} /></article>
+              <article className="panel chart-panel"><div className="panel-heading"><div><p className="section-kicker">Magnitude distribution</p><h2>How strong?</h2></div><span className="panel-unit">records</span></div><DistributionBars items={summary.magnitude_distribution} labelKey="magnitude_bin" valueKey="earthquake_count" color="coral" /></article>
+              <article className="panel chart-panel"><div className="panel-heading"><div><p className="section-kicker">Depth distribution</p><h2>How deep?</h2></div><span className="panel-unit">records</span></div><DistributionBars items={summary.depth_distribution} labelKey="depth_bin" valueKey="earthquake_count" color="teal" /></article>
+            </section>
+
+            <section className="content-grid lower-grid">
+              <article className="panel province-panel"><div className="panel-heading"><div><p className="section-kicker">Provincial activity</p><h2>Most represented provinces</h2></div><span className="panel-unit">assigned records</span></div><ProvinceRanking provinces={dashboard.provinces} /></article>
+              <article className="panel cluster-panel"><div className="panel-heading"><div><p className="section-kicker">Model summary</p><h2>K-Means groupings</h2></div><span className="metric-chip">K = {dashboard.clusters.selected_k}</span></div><div className="cluster-summary-list">{dashboard.clusters.summaries.map((cluster) => <div className="cluster-summary" key={cluster.cluster_label}><span className="cluster-swatch" style={{ background: ["#66d9c2", "#f4b860", "#ff7d9d", "#9b8cff"][cluster.cluster_label % 4] }} /><div><strong>Cluster {cluster.cluster_label}</strong><span>{formatNumber(cluster.record_count)} records · mean M {formatNumber(cluster.mean_magnitude, 2)}</span></div><b>{formatNumber(cluster.percentage_of_clustered_records, 1)}%</b></div>)}</div><p className="small-note">Cluster labels are identifiers, not rankings. K-Means uses projected coordinates only.</p></article>
+            </section>
+
+            <section className="panel recent-panel"><div className="panel-heading"><div><p className="section-kicker">Record detail</p><h2>Latest records in view</h2></div><span className="panel-unit">sorted by UTC time</span></div><RecentEvents events={dashboard.events.data} /></section>
+          </>
+        ) : null}
+
+        <section className="footer-grid">
+          <article className="footer-card"><p className="section-kicker">Sources</p><h2>Trace the inputs</h2><p>Results are built from the imported canonical event records and ADM2 geographic assignments.</p><div className="source-links"><a href="https://earthquake.usgs.gov/earthquakes/search/" target="_blank" rel="noreferrer">USGS Earthquake Catalog ↗</a><a href="https://www.geoboundaries.org/" target="_blank" rel="noreferrer">geoBoundaries ↗</a><a href="https://www.phivolcs.dost.gov.ph/" target="_blank" rel="noreferrer">PHIVOLCS · preferred final source ↗</a></div></article>
+          <article className="footer-card disclaimer-card"><p className="section-kicker">Scientific disclaimer</p><h2>Use this as an exploratory lens.</h2><p>These records and clusters are descriptive. They do not establish earthquake prediction, recurrence probability, causation, or provincial hazard. The USGS 2025 results are provisional development results and must be rerun after final research data is inspected and imported.</p></article>
+        </section>
+      </main>
+      <footer className="site-footer"><span>Earthquake Hotspot Finder · Phase 8 dashboard</span><span>Historical dataset-relative view · UTC</span></footer>
+    </div>
   );
 }
 

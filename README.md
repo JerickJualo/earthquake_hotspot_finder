@@ -21,6 +21,8 @@ Phase 6 now provides the PostgreSQL schema, Alembic migration, SQLAlchemy models
 
 Phase 7 now provides database-backed FastAPI endpoints for earthquake records, shared filtering, descriptive summaries, province activity, on-demand K-Means analysis, readiness checks, safe error handling, and backend tests. See [the API documentation](docs/API.md).
 
+Phase 8 now provides the responsive React dashboard: shared filters, summary cards, server-derived charts, coordinate map, cluster summaries, provincial rankings, source references, and scientific disclaimers.
+
 The current USGS 2025 data is provisional development data. The planned transition to the preferred PHIVOLCS research dataset is governed by [the dataset transition policy](docs/DATASET_TRANSITION_POLICY.md). The application must keep source provenance, canonical schema mapping, raw/processed/imported data separation, and controlled dataset replacement independent of any one provider.
 
 ## Technology foundation

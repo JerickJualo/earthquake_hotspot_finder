@@ -1,8 +1,8 @@
 # Project Status
 
 **Last updated:** 2026-11-15  
-**Current phase:** Phase 7 — FastAPI Development implementation complete; PostgreSQL connection pending
-**Frontend development:** Not started
+**Current phase:** Phase 8 — React Development implementation complete; PostgreSQL connection pending
+**Frontend development:** Dashboard implemented and production build verified
 
 ## Authoritative dataset policy
 
@@ -57,6 +57,10 @@ See [DATASET_TRANSITION_POLICY.md](docs/DATASET_TRANSITION_POLICY.md) for the co
 - Integrated the existing Python EDA and scikit-learn clustering services without duplicating analytics logic.
 - Added safe 404, 422, and 503 error handling that does not expose database credentials or connection details.
 - Added API endpoint tests using an isolated SQLite database; all 9 backend tests pass.
+- Built the responsive React dashboard with shared filters, summary cards, charts, coordinate map, cluster summaries, and provincial rankings.
+- Added source references, scientific disclaimer, provisional-data labeling, loading states, and database-unavailable error handling.
+- Extended the summary API response to preserve chart-ready magnitude, depth, and province distributions.
+- Verified the frontend production build with Vite.
 
 ## Previous baseline audit findings
 
@@ -126,6 +130,12 @@ See [DATABASE.md](docs/DATABASE.md) for the safe setup and verification procedur
 The FastAPI backend is operational at the application-code level. The shared filter dependency supports source/import, date, magnitude, depth, province, geographic-status, and cluster filters. Analytics routes reuse the Phase 4 statistics and Phase 5 K-Means services. The API contract and local verification instructions are documented in [API.md](docs/API.md).
 
 The API tests use isolated SQLite and do not modify the original downloaded files. Live PostgreSQL readiness and import remain pending until the local `.env` password is configured; no password was guessed or stored in the repository.
+
+## Phase 8 result
+
+The React dashboard is operational at the application-code level. It loads the Phase 7 API, keeps filter state in one place, renders server-derived statistics, plots returned event coordinates and cluster labels, and responds to narrow screens. When the API or database is unavailable, the interface explains the condition without fabricating statistics.
+
+The production bundle was verified with `npm.cmd run build`. The frontend remains explicitly labeled as a provisional USGS 2025 development view, and the original downloaded files were not modified.
 
 ## Phase 2 result
 

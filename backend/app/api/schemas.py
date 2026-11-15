@@ -51,6 +51,9 @@ class SummaryResponse(BaseModel):
     geographic_assignment_counts: dict[str, int]
     assigned_province_count: int
     monthly_activity: list[dict[str, Any]]
+    province_activity: list[dict[str, Any]]
+    magnitude_distribution: list[dict[str, Any]]
+    depth_distribution: list[dict[str, Any]]
 
 
 class ClusterAnalysisResponse(BaseModel):
