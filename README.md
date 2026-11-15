@@ -11,6 +11,10 @@ Phase 1 dataset auditing is complete. The active datasets are documented in:
 
 Phase 2 now provides a minimal backend, frontend, local environment configuration, and development verification commands.
 
+Phase 3 now provides the source-independent data pipeline, canonical mapping, validation, cleaning, streaming ADM2 province assignment, cleaned development output, and a data-quality report.
+
+The current USGS 2025 data is provisional development data. The planned transition to the preferred PHIVOLCS research dataset is governed by [the dataset transition policy](docs/DATASET_TRANSITION_POLICY.md). The application must keep source provenance, canonical schema mapping, raw/processed/imported data separation, and controlled dataset replacement independent of any one provider.
+
 ## Technology foundation
 
 - Python, FastAPI, SQLAlchemy, Alembic, PostgreSQL
@@ -62,5 +66,14 @@ Frontend production build:
 cd frontend
 npm.cmd run build
 ```
+
+Run the Phase 3 data pipeline from the backend directory:
+
+```powershell
+cd backend
+.\\.venv\\Scripts\\python.exe -m app.data_pipeline.run_pipeline
+```
+
+The pipeline reads the active raw USGS and ADM2 files without modifying them and writes the cleaned development dataset and quality report under `backend/data/processed/`. See [the processing rules](docs/DATA_PROCESSING_RULES.md) for the decisions and replacement-data expectations.
 
 The database engine configuration is present, but schema creation and data import belong to later phases. The current health endpoint verifies only that the API process is running.

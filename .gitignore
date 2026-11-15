@@ -9,6 +9,8 @@ __pycache__/
 backend/.env
 
 # Generated datasets and analysis output
+backend/data/raw/
+backend/data/boundaries/
 backend/data/processed/
 backend/data/inspection/
 *.parquet
@@ -23,6 +25,3 @@ frontend/dist/
 .ipynb_checkpoints/
 .vscode/
 
-# Large local datasets; keep them locally, do not upload to GitHub
-backend/data/raw/
-backend/data/boundaries/

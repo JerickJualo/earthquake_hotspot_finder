@@ -1,8 +1,16 @@
 # Project Status
 
 **Last updated:** 2026-11-15  
-**Current phase:** Phase 2 — Environment and Project Setup complete  
+**Current phase:** Phase 3 — Data Pipeline complete  
 **Frontend development:** Not started
+
+## Authoritative dataset policy
+
+The USGS 2025 dataset is the provisional development dataset. Development should continue using it while the PHIVOLCS catalogue request is pending. PHIVOLCS is the preferred final research dataset, subject to independent inspection and validation when received.
+
+The project must preserve raw files, processed datasets, database imports, source names, source event IDs, and dataset provenance. It must use a canonical source-independent earthquake schema, avoid automatic USGS/PHIVOLCS merging, and provide a controlled replacement and re-import procedure. USGS-derived statistics, rankings, and K-Means clusters must be labelled provisional development results rather than final research conclusions.
+
+See [DATASET_TRANSITION_POLICY.md](docs/DATASET_TRANSITION_POLICY.md) for the complete policy.
 
 ## Current active datasets
 
@@ -28,6 +36,11 @@
 - Verified the backend test suite: 1 test passed.
 - Verified the running backend health endpoint: HTTP 200.
 - Verified the frontend production build: successful Vite build.
+- Implemented source-independent canonical schema mapping with preserved `source__...` raw fields.
+- Implemented USGS loading, validation, cleaning, provenance, and explicit quality flags.
+- Implemented memory-conscious streaming ADM2 Polygon/MultiPolygon province assignment for the 444 MB boundary file.
+- Generated the cleaned development dataset and Phase 3 quality report.
+- Added data-pipeline unit tests; all 3 tests pass.
 
 ## Previous baseline audit findings
 
@@ -45,9 +58,32 @@
 - The active geoBoundaries file contains 86 ADM2 province features and is appropriate for province-level point-in-polygon assignment.
 - Offshore events and nearby-country events must be handled through explicit, documented spatial-scope rules.
 
+## Phase 3 result
+
+The Phase 3 pipeline is operational. Run it from `backend/` with:
+
+```powershell
+.\.venv\Scripts\python.exe -m app.data_pipeline.run_pipeline
+```
+
+The generated development artifacts are:
+
+- `backend/data/processed/cleaned_usgs_2025.csv`
+- `backend/data/processed/DATA_QUALITY_REPORT.md`
+
+The current run retained all 794 source records, found no required-field validation failures, assigned 120 records to 37 ADM2 provinces, marked 652 Philippine-labelled records as offshore/unassigned, and retained 22 nearby-country candidates for explicit review. These are provisional development-data results, not final research conclusions.
+
 ## Phase 2 result
 
 The development environments are ready for the next implementation phase. PostgreSQL connection configuration exists, but the database schema, migrations, and data import are intentionally deferred until the data-processing rules are finalized.
+
+## Dataset transition requirements to carry into later phases
+
+- Build source adapters and canonical schema mapping rather than hardcoding USGS columns.
+- Add dataset version/import references and duplicate-protection checks.
+- Keep a controlled dataset replacement path for PHIVOLCS.
+- Support historical dataset-relative date filters during development and label them clearly.
+- Rerun analyses, clustering, API checks, frontend data checks, and relevant tests after final-data import.
 
 ## Jupyter Notebook decision
 
@@ -63,9 +99,8 @@ Reusable production logic should remain in Python modules or services. Notebooks
 
 ## Current limitations and next actions
 
-1. Complete a memory-conscious geometry validation/processing plan for the 444 MB ADM2 GeoJSON.
-2. Define the configurable Philippine spatial scope and offshore-event policy.
-3. Implement canonical schema mapping and data-quality flags.
-4. Use a Jupyter Notebook for the first EDA once the spatial rules are documented.
-5. Create the cleaned development dataset and proceed to database schema design.
+1. Finalize the configurable Philippine spatial scope and offshore-event inclusion policy with the research requirements.
+2. Use a Jupyter Notebook for documented exploratory analysis of the cleaned development dataset.
+3. Create the PostgreSQL schema and controlled import process using the canonical fields and provenance identifiers.
+4. Add PHIVOLCS as a separately inspected source adapter when the catalogue becomes available.
 

@@ -34,6 +34,10 @@ The active CSV contains 794 records and the same 22 source columns as the previo
 
 ## Application fields
 
+The processed file places canonical fields first. Every original USGS value is also retained as a namespaced field such as `source__time` or `source__latitude`; this preserves provenance without creating duplicate column names.
+
+The current canonical output also includes `station_count`, `azimuthal_gap`, `distance_to_nearest_station`, `rms_residual`, `horizontal_error`, `depth_error`, `magnitude_error`, and `magnitude_station_count`, mapped from the corresponding USGS quality and uncertainty fields.
+
 | Canonical field | Source or derivation | Initial rule |
 |---|---|---|
 | `source_event_id` | `id` | Required for provenance and deduplication |
