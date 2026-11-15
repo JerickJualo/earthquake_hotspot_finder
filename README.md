@@ -15,6 +15,8 @@ Phase 3 now provides the source-independent data pipeline, canonical mapping, va
 
 Phase 4 now provides a reproducible Jupyter EDA notebook, descriptive statistics, six exploratory figures, and documented interpretation limits. The results are provisional USGS development findings.
 
+Phase 5 now provides a reusable geographical K-Means service, projected-coordinate preparation, candidate-K evaluation, cluster summaries, edge-case tests, and cluster visualizations. The clusters are descriptive spatial groupings, not predictions or final hazard conclusions.
+
 The current USGS 2025 data is provisional development data. The planned transition to the preferred PHIVOLCS research dataset is governed by [the dataset transition policy](docs/DATASET_TRANSITION_POLICY.md). The application must keep source provenance, canonical schema mapping, raw/processed/imported data separation, and controlled dataset replacement independent of any one provider.
 
 ## Technology foundation
@@ -86,5 +88,14 @@ cd backend
 ```
 
 See [EDA methods](docs/EDA_METHODS.md), [EDA findings](docs/eda/EDA_FINDINGS.md), and the [Jupyter notebook](backend/notebooks/phase4_eda_usgs_2025.ipynb).
+
+Run Phase 5 clustering from the backend directory:
+
+```powershell
+cd backend
+.\.venv\Scripts\python.exe -m app.services.run_clustering
+```
+
+See [clustering methods](docs/CLUSTERING_METHODS.md) and [clustering findings](docs/clustering/CLUSTERING_FINDINGS.md).
 
 The database engine configuration is present, but schema creation and data import belong to later phases. The current health endpoint verifies only that the API process is running.

@@ -1,7 +1,7 @@
 # Project Status
 
 **Last updated:** 2026-11-15  
-**Current phase:** Phase 4 — Exploratory Data Analysis complete  
+**Current phase:** Phase 5 — Machine Learning complete  
 **Frontend development:** Not started
 
 ## Authoritative dataset policy
@@ -44,6 +44,10 @@ See [DATASET_TRANSITION_POLICY.md](docs/DATASET_TRANSITION_POLICY.md) for the co
 - Added JupyterLab and Matplotlib to the project environment for reproducible EDA.
 - Created and executed the Phase 4 EDA notebook with descriptive statistics and six figures.
 - Documented EDA methods, findings, and interpretation limitations.
+- Implemented reusable projected-coordinate geographical K-Means service.
+- Evaluated K=2 through K=8 with inertia, silhouette, Calinski-Harabasz, and Davies-Bouldin metrics.
+- Generated cluster labels, summaries, metadata, visualizations, and clustering documentation.
+- Added clustering edge-case tests.
 
 ## Previous baseline audit findings
 
@@ -87,6 +91,20 @@ Artifacts:
 - `docs/eda/EDA_FINDINGS.md`
 - `docs/eda/statistics/`
 - `docs/eda/figures/`
+
+## Phase 5 result
+
+The clustering service is operational. The default run uses 772 in-scope records, excludes 22 nearby-country candidates by explicit status, selects K=2 using the highest silhouette score (0.6716), and writes the clustered development output and evaluation artifacts. Cluster labels describe geographic partitions only; they are not hotspot rankings or predictions.
+
+Artifacts:
+
+- `backend/app/services/clustering_service.py`
+- `backend/data/processed/clustered_usgs_2025.csv`
+- `docs/CLUSTERING_METHODS.md`
+- `docs/clustering/CLUSTERING_FINDINGS.md`
+- `docs/clustering/cluster_evaluation.csv`
+- `docs/clustering/cluster_summaries.csv`
+- `docs/clustering/figures/`
 
 ## Phase 2 result
 

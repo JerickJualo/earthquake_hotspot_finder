@@ -1,0 +1,43 @@
+{
+  "input_dataset": "cleaned_usgs_2025.csv",
+  "output_dataset": "clustered_usgs_2025.csv",
+  "coordinate_source_crs": "EPSG:4326",
+  "projected_crs": "+proj=aeqd +lat_0=12.8797 +lon_0=121.7740 +datum=WGS84 +units=m +no_defs +type=crs",
+  "projected_crs_name": "WGS84 local azimuthal equidistant projection centered on the Philippines",
+  "included_statuses": [
+    "assigned",
+    "offshore_or_unassigned"
+  ],
+  "excluded_status_counts": {
+    "excluded_outside_study_scope": 22
+  },
+  "eligible_record_count": 772,
+  "selected_k": 2,
+  "candidate_k_range": [
+    2,
+    8
+  ],
+  "fit": {
+    "n_clusters": 2,
+    "random_state": 42,
+    "n_init": 20,
+    "inertia_m2": 62831680734024.8,
+    "silhouette_score": 0.6716211308547793,
+    "cluster_centroids": [
+      {
+        "cluster_label": 0,
+        "centroid_longitude": 121.30126646836757,
+        "centroid_latitude": 16.73493977520372,
+        "centroid_x_m": -50447.43102771015,
+        "centroid_y_m": 426622.44154931785
+      },
+      {
+        "cluster_label": 1,
+        "centroid_longitude": 126.03020969269251,
+        "centroid_latitude": 7.695884625360825,
+        "centroid_x_m": 470182.86561412085,
+        "centroid_y_m": -570003.3977471883
+      }
+    ]
+  }
+}
