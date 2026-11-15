@@ -1,0 +1,4 @@
+depth_bin,earthquake_count
+Shallow (<70 km),557
+Intermediate (70–<300 km),213
+Deep (≥300 km),24

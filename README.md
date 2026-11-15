@@ -13,6 +13,8 @@ Phase 2 now provides a minimal backend, frontend, local environment configuratio
 
 Phase 3 now provides the source-independent data pipeline, canonical mapping, validation, cleaning, streaming ADM2 province assignment, cleaned development output, and a data-quality report.
 
+Phase 4 now provides a reproducible Jupyter EDA notebook, descriptive statistics, six exploratory figures, and documented interpretation limits. The results are provisional USGS development findings.
+
 The current USGS 2025 data is provisional development data. The planned transition to the preferred PHIVOLCS research dataset is governed by [the dataset transition policy](docs/DATASET_TRANSITION_POLICY.md). The application must keep source provenance, canonical schema mapping, raw/processed/imported data separation, and controlled dataset replacement independent of any one provider.
 
 ## Technology foundation
@@ -75,5 +77,14 @@ cd backend
 ```
 
 The pipeline reads the active raw USGS and ADM2 files without modifying them and writes the cleaned development dataset and quality report under `backend/data/processed/`. See [the processing rules](docs/DATA_PROCESSING_RULES.md) for the decisions and replacement-data expectations.
+
+Run Phase 4 EDA from the backend directory:
+
+```powershell
+cd backend
+.\.venv\Scripts\python.exe -m app.analysis.run_eda
+```
+
+See [EDA methods](docs/EDA_METHODS.md), [EDA findings](docs/eda/EDA_FINDINGS.md), and the [Jupyter notebook](backend/notebooks/phase4_eda_usgs_2025.ipynb).
 
 The database engine configuration is present, but schema creation and data import belong to later phases. The current health endpoint verifies only that the API process is running.

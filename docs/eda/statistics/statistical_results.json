@@ -1,0 +1,302 @@
+{
+  "record_count": 794,
+  "date_min_utc": "2025-01-01T18:39:33.615000+00:00",
+  "date_max_utc": "2025-12-31T17:30:42.385000+00:00",
+  "numeric_summary": {
+    "magnitude": {
+      "count": 794,
+      "min": 4.0,
+      "q1": 4.3,
+      "median": 4.5,
+      "mean": 4.5683879093199,
+      "q3": 4.7,
+      "max": 7.4,
+      "std": 0.3771141105329909
+    },
+    "depth_km": {
+      "count": 794,
+      "min": 8.401,
+      "q1": 10.0,
+      "median": 35.0,
+      "mean": 61.741865239294704,
+      "q3": 78.28475,
+      "max": 634.664,
+      "std": 94.60569840008952
+    },
+    "latitude": {
+      "count": 794,
+      "min": 4.0214,
+      "q1": 6.598375000000001,
+      "median": 7.71565,
+      "mean": 9.609323173803526,
+      "q3": 11.2251,
+      "max": 21.9585,
+      "std": 4.51338550945299
+    },
+    "longitude": {
+      "count": 794,
+      "min": 116.7771,
+      "q1": 123.9087,
+      "median": 126.05595,
+      "mean": 125.06083513853905,
+      "q3": 126.827775,
+      "max": 127.934,
+      "std": 2.3046211328632507
+    }
+  },
+  "magnitude_type_counts": {
+    "mb": 724,
+    "mww": 67,
+    "mwr": 3
+  },
+  "geographic_assignment_counts": {
+    "offshore_or_unassigned": 652,
+    "assigned": 120,
+    "outside_study_scope_candidate": 22
+  },
+  "assigned_province_count": 37,
+  "province_activity": [
+    {
+      "province_name": "Cebu",
+      "earthquake_count": 16
+    },
+    {
+      "province_name": "Ilocos Norte",
+      "earthquake_count": 7
+    },
+    {
+      "province_name": "Surigao del Sur",
+      "earthquake_count": 7
+    },
+    {
+      "province_name": "Surigao del Norte",
+      "earthquake_count": 6
+    },
+    {
+      "province_name": "Leyte",
+      "earthquake_count": 6
+    },
+    {
+      "province_name": "Davao Oriental",
+      "earthquake_count": 6
+    },
+    {
+      "province_name": "Cotabato",
+      "earthquake_count": 5
+    },
+    {
+      "province_name": "Abra",
+      "earthquake_count": 5
+    },
+    {
+      "province_name": "Agusan del Sur",
+      "earthquake_count": 4
+    },
+    {
+      "province_name": "Occidental Mindoro",
+      "earthquake_count": 4
+    },
+    {
+      "province_name": "Oriental Mindoro",
+      "earthquake_count": 4
+    },
+    {
+      "province_name": "Zambales",
+      "earthquake_count": 4
+    },
+    {
+      "province_name": "Negros Oriental",
+      "earthquake_count": 4
+    },
+    {
+      "province_name": "Southern Leyte",
+      "earthquake_count": 3
+    },
+    {
+      "province_name": "Maguindanao",
+      "earthquake_count": 3
+    },
+    {
+      "province_name": "Eastern Samar",
+      "earthquake_count": 3
+    },
+    {
+      "province_name": "Batangas",
+      "earthquake_count": 3
+    },
+    {
+      "province_name": "Camarines Sur",
+      "earthquake_count": 3
+    },
+    {
+      "province_name": "Davao Occidental",
+      "earthquake_count": 3
+    },
+    {
+      "province_name": "Dinagat Islands",
+      "earthquake_count": 2
+    },
+    {
+      "province_name": "Sorsogon",
+      "earthquake_count": 2
+    },
+    {
+      "province_name": "Ilocos Sur",
+      "earthquake_count": 2
+    },
+    {
+      "province_name": "Aurora",
+      "earthquake_count": 2
+    },
+    {
+      "province_name": "La Union",
+      "earthquake_count": 2
+    },
+    {
+      "province_name": "Pangasinan",
+      "earthquake_count": 2
+    },
+    {
+      "province_name": "Sarangani",
+      "earthquake_count": 1
+    },
+    {
+      "province_name": "Zamboanga del Norte",
+      "earthquake_count": 1
+    },
+    {
+      "province_name": "Cagayan",
+      "earthquake_count": 1
+    },
+    {
+      "province_name": "Davao del Sur",
+      "earthquake_count": 1
+    },
+    {
+      "province_name": "Bukidnon",
+      "earthquake_count": 1
+    },
+    {
+      "province_name": "Davao del Norte",
+      "earthquake_count": 1
+    },
+    {
+      "province_name": "Agusan del Norte",
+      "earthquake_count": 1
+    },
+    {
+      "province_name": "Quezon",
+      "earthquake_count": 1
+    },
+    {
+      "province_name": "Albay",
+      "earthquake_count": 1
+    },
+    {
+      "province_name": "Pampanga",
+      "earthquake_count": 1
+    },
+    {
+      "province_name": "Apayao",
+      "earthquake_count": 1
+    },
+    {
+      "province_name": "Tarlac",
+      "earthquake_count": 1
+    }
+  ],
+  "monthly_activity": [
+    {
+      "month": "2025-01",
+      "earthquake_count": 53
+    },
+    {
+      "month": "2025-02",
+      "earthquake_count": 42
+    },
+    {
+      "month": "2025-03",
+      "earthquake_count": 53
+    },
+    {
+      "month": "2025-04",
+      "earthquake_count": 42
+    },
+    {
+      "month": "2025-05",
+      "earthquake_count": 54
+    },
+    {
+      "month": "2025-06",
+      "earthquake_count": 50
+    },
+    {
+      "month": "2025-07",
+      "earthquake_count": 47
+    },
+    {
+      "month": "2025-08",
+      "earthquake_count": 32
+    },
+    {
+      "month": "2025-09",
+      "earthquake_count": 64
+    },
+    {
+      "month": "2025-10",
+      "earthquake_count": 234
+    },
+    {
+      "month": "2025-11",
+      "earthquake_count": 74
+    },
+    {
+      "month": "2025-12",
+      "earthquake_count": 49
+    }
+  ],
+  "magnitude_distribution": [
+    {
+      "magnitude_bin": "<4.5",
+      "earthquake_count": 356
+    },
+    {
+      "magnitude_bin": "4.5–<5.0",
+      "earthquake_count": 344
+    },
+    {
+      "magnitude_bin": "5.0–<5.5",
+      "earthquake_count": 70
+    },
+    {
+      "magnitude_bin": "5.5–<6.0",
+      "earthquake_count": 17
+    },
+    {
+      "magnitude_bin": "6.0–<6.5",
+      "earthquake_count": 4
+    },
+    {
+      "magnitude_bin": "6.5–<7.0",
+      "earthquake_count": 2
+    },
+    {
+      "magnitude_bin": "≥7.0",
+      "earthquake_count": 1
+    }
+  ],
+  "depth_distribution": [
+    {
+      "depth_bin": "Shallow (<70 km)",
+      "earthquake_count": 557
+    },
+    {
+      "depth_bin": "Intermediate (70–<300 km)",
+      "earthquake_count": 213
+    },
+    {
+      "depth_bin": "Deep (≥300 km)",
+      "earthquake_count": 24
+    }
+  ]
+}

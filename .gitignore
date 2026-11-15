@@ -24,4 +24,5 @@ frontend/dist/
 # Notebooks and editor files
 .ipynb_checkpoints/
 .vscode/
+.matplotlib/
 

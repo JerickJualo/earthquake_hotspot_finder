@@ -1,7 +1,7 @@
 # Project Status
 
 **Last updated:** 2026-11-15  
-**Current phase:** Phase 3 — Data Pipeline complete  
+**Current phase:** Phase 4 — Exploratory Data Analysis complete  
 **Frontend development:** Not started
 
 ## Authoritative dataset policy
@@ -41,6 +41,9 @@ See [DATASET_TRANSITION_POLICY.md](docs/DATASET_TRANSITION_POLICY.md) for the co
 - Implemented memory-conscious streaming ADM2 Polygon/MultiPolygon province assignment for the 444 MB boundary file.
 - Generated the cleaned development dataset and Phase 3 quality report.
 - Added data-pipeline unit tests; all 3 tests pass.
+- Added JupyterLab and Matplotlib to the project environment for reproducible EDA.
+- Created and executed the Phase 4 EDA notebook with descriptive statistics and six figures.
+- Documented EDA methods, findings, and interpretation limitations.
 
 ## Previous baseline audit findings
 
@@ -73,6 +76,18 @@ The generated development artifacts are:
 
 The current run retained all 794 source records, found no required-field validation failures, assigned 120 records to 37 ADM2 provinces, marked 652 Philippine-labelled records as offshore/unassigned, and retained 22 nearby-country candidates for explicit review. These are provisional development-data results, not final research conclusions.
 
+## Phase 4 result
+
+The EDA is complete for the current USGS development dataset. It reports basic numeric summaries, magnitude and depth distributions, monthly activity, coordinate distribution, geographic assignment status, and province-level activity. The October 2025 count is the highest monthly count at 234 records; this descriptive result must not be interpreted as a forecast or a final hazard conclusion.
+
+Artifacts:
+
+- `backend/notebooks/phase4_eda_usgs_2025.ipynb`
+- `docs/EDA_METHODS.md`
+- `docs/eda/EDA_FINDINGS.md`
+- `docs/eda/statistics/`
+- `docs/eda/figures/`
+
 ## Phase 2 result
 
 The development environments are ready for the next implementation phase. PostgreSQL connection configuration exists, but the database schema, migrations, and data import are intentionally deferred until the data-processing rules are finalized.
@@ -100,7 +115,6 @@ Reusable production logic should remain in Python modules or services. Notebooks
 ## Current limitations and next actions
 
 1. Finalize the configurable Philippine spatial scope and offshore-event inclusion policy with the research requirements.
-2. Use a Jupyter Notebook for documented exploratory analysis of the cleaned development dataset.
-3. Create the PostgreSQL schema and controlled import process using the canonical fields and provenance identifiers.
-4. Add PHIVOLCS as a separately inspected source adapter when the catalogue becomes available.
+2. Create the PostgreSQL schema and controlled import process using the canonical fields and provenance identifiers.
+3. Add PHIVOLCS as a separately inspected source adapter when the catalogue becomes available.
 

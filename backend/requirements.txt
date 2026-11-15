@@ -1,6 +1,8 @@
 # Core data analysis
 pandas>=2.2
 numpy>=2.1
+matplotlib>=3.10
+jupyterlab>=4.4
 
 # Geospatial data processing
 geopandas>=1.0
