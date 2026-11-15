@@ -19,6 +19,8 @@ Phase 5 now provides a reusable geographical K-Means service, projected-coordina
 
 Phase 6 now provides the PostgreSQL schema, Alembic migration, SQLAlchemy models, controlled processed-data importer, indexes, and verification command. PostgreSQL credentials remain local-only in `.env`.
 
+Phase 7 now provides database-backed FastAPI endpoints for earthquake records, shared filtering, descriptive summaries, province activity, on-demand K-Means analysis, readiness checks, safe error handling, and backend tests. See [the API documentation](docs/API.md).
+
 The current USGS 2025 data is provisional development data. The planned transition to the preferred PHIVOLCS research dataset is governed by [the dataset transition policy](docs/DATASET_TRANSITION_POLICY.md). The application must keep source provenance, canonical schema mapping, raw/processed/imported data separation, and controlled dataset replacement independent of any one provider.
 
 ## Technology foundation
@@ -102,4 +104,6 @@ See [clustering methods](docs/CLUSTERING_METHODS.md) and [clustering findings](d
 
 See [database documentation](docs/DATABASE.md) for migration, import, replacement, and verification commands.
 
-The database engine configuration is present, but schema creation and data import belong to later phases. The current health endpoint verifies only that the API process is running.
+See [API documentation](docs/API.md) for endpoint parameters, response behavior, error handling, and API test commands.
+
+The database schema, migration, and import commands are implemented. Live PostgreSQL execution remains a local setup step until `.env` contains the user's PostgreSQL password. `/health` verifies that the API process is running; `/api/v1/system/ready` verifies database readiness.
