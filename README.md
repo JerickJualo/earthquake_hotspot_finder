@@ -23,13 +23,15 @@ Phase 7 now provides database-backed FastAPI endpoints for earthquake records, s
 
 Phase 8 now provides the responsive React dashboard: shared filters, summary cards, server-derived charts, coordinate map, cluster summaries, provincial rankings, source references, and scientific disclaimers.
 
+Phase 9 now connects the dashboard to FastAPI through one shared filter state, uses Leaflet for the geographic view and Recharts for analytical charts, and verifies the frontend production integration. Copy `frontend/.env.example` to `frontend/.env` only when the API is running at a non-default URL.
+
 The current USGS 2025 data is provisional development data. The planned transition to the preferred PHIVOLCS research dataset is governed by [the dataset transition policy](docs/DATASET_TRANSITION_POLICY.md). The application must keep source provenance, canonical schema mapping, raw/processed/imported data separation, and controlled dataset replacement independent of any one provider.
 
 ## Technology foundation
 
 - Python, FastAPI, SQLAlchemy, Alembic, PostgreSQL
 - Pandas, NumPy, GeoPandas, Shapely, PyProj, scikit-learn
-- React, Vite, JavaScript
+- React, Vite, JavaScript, Leaflet, React-Leaflet, Recharts
 
 ## Local setup
 
@@ -53,6 +55,8 @@ The current USGS 2025 data is provisional development data. The planned transiti
    cd frontend
    npm.cmd run dev
    ```
+
+   The frontend defaults to `http://localhost:8000` for FastAPI. Copy `frontend/.env.example` to `frontend/.env` and change `VITE_API_BASE_URL` only when using another backend URL.
 
 6. Open the Vite URL shown in the terminal. The starter page checks `http://localhost:8000/health`.
 

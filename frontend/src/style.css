@@ -111,6 +111,18 @@ button:disabled { cursor: wait; opacity: 0.6; }
 .legend-dot { display: inline-block; width: 7px; height: 7px; margin-right: 0.3rem; border-radius: 50%; background: #9aabc0; }
 .dot-cluster-a { background: #66d9c2; }.dot-cluster-b { background: #f4b860; }
 .map-count { margin-left: auto; color: var(--faint); }.map-footnote { margin: 0.75rem 0 0; color: var(--faint); font-size: 0.65rem; }
+.leaflet-map { height: 390px; width: 100%; overflow: hidden; border: 1px solid rgba(102, 217, 194, 0.16); border-radius: 14px; background: #111d2c; }
+.leaflet-container { font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif; background: #111d2c; }
+.leaflet-tile-pane { filter: saturate(0.62) brightness(0.64) hue-rotate(170deg); }
+.leaflet-control-zoom { overflow: hidden; border: 1px solid rgba(190, 211, 236, 0.18) !important; border-radius: 8px !important; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.24) !important; }
+.leaflet-control-zoom a { border-color: rgba(190, 211, 236, 0.13) !important; color: #dce7f4 !important; background: #172438 !important; }
+.leaflet-control-zoom a:hover { color: var(--teal) !important; background: #20324a !important; }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { color: #dce7f4; background: #172438; }
+.leaflet-popup-content { font-size: 0.72rem; line-height: 1.6; }
+.leaflet-popup-content strong { color: var(--teal); }
+.recharts-box { width: 100%; height: 220px; }
+.distribution-chart { height: 220px; }
+.recharts-tooltip-cursor { fill: rgba(190, 211, 236, 0.06); }
 
 .status-breakdown { display: grid; gap: 1.1rem; }
 .status-item-heading { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.4rem; color: var(--muted); font-size: 0.75rem; }
@@ -132,5 +144,5 @@ button:disabled { cursor: wait; opacity: 0.6; }
 .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 2rem; }.footer-card { padding: 1.35rem; border-radius: 16px; }.footer-card h2 { margin-bottom: 0.65rem; font-size: 1.15rem; }.footer-card p:not(.section-kicker) { max-width: 52ch; margin-bottom: 1rem; color: var(--muted); font-size: 0.75rem; line-height: 1.65; }.source-links { display: flex; flex-wrap: wrap; gap: 0.65rem 1rem; }.source-links a { color: var(--blue); font-size: 0.7rem; text-decoration: none; }.source-links a:hover { color: var(--teal); text-decoration: underline; }.disclaimer-card { border-color: rgba(244, 184, 96, 0.26); background: rgba(57, 45, 28, 0.25); }.disclaimer-card .section-kicker { color: var(--gold); }.site-footer { display: flex; justify-content: space-between; gap: 1rem; max-width: 1440px; margin: 0 auto; padding: 1.2rem clamp(1.1rem, 4vw, 4rem) 1.8rem; color: var(--faint); font-size: 0.66rem; }
 
 @media (max-width: 1050px) { .filter-grid { grid-template-columns: repeat(3, 1fr); }.filter-actions { grid-column: span 3; }.summary-grid { grid-template-columns: repeat(2, 1fr); }.charts-grid { grid-template-columns: 1fr 1fr; }.chart-wide { grid-column: span 2; } }
-@media (max-width: 760px) { .topbar, .dashboard-intro, .site-footer { align-items: flex-start; flex-direction: column; }.topbar-meta { flex-wrap: wrap; }.dashboard-intro { gap: 1.5rem; }.intro-note { max-width: 100%; }.filter-grid, .summary-grid, .map-grid-section, .charts-grid, .lower-grid, .footer-grid { grid-template-columns: 1fr; }.filter-actions, .chart-wide { grid-column: auto; }.filter-actions { justify-content: flex-start; }.panel, .filter-panel { padding: 1rem; }.month-value { font-size: 0.52rem; }.month-label { font-size: 0.58rem; }.coordinate-map { min-height: 240px; }.site-footer { line-height: 1.5; } }
+@media (max-width: 760px) { .topbar, .dashboard-intro, .site-footer { align-items: flex-start; flex-direction: column; }.topbar-meta { flex-wrap: wrap; }.dashboard-intro { gap: 1.5rem; }.intro-note { max-width: 100%; }.filter-grid, .summary-grid, .map-grid-section, .charts-grid, .lower-grid, .footer-grid { grid-template-columns: 1fr; }.filter-actions, .chart-wide { grid-column: auto; }.filter-actions { justify-content: flex-start; }.panel, .filter-panel { padding: 1rem; }.month-value { font-size: 0.52rem; }.month-label { font-size: 0.58rem; }.coordinate-map { min-height: 240px; }.leaflet-map { height: 300px; }.site-footer { line-height: 1.5; } }
 @media (max-width: 450px) { .dashboard { padding-top: 2rem; }.topbar-meta { align-items: flex-start; flex-direction: column; }.summary-grid { grid-template-columns: 1fr 1fr; }.summary-card { min-height: 132px; padding: 0.85rem; }.summary-label { margin-bottom: 1rem; font-size: 0.6rem; }.summary-value { font-size: 1.35rem; }.filter-actions { flex-wrap: wrap; }.primary-button, .quiet-button { flex: 1; }.ranking-row { grid-template-columns: 20px minmax(90px, 1fr) 80px 28px; gap: 0.4rem; } }

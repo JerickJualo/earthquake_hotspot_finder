@@ -1,6 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
+  CircleMarker,
+  MapContainer,
+  Popup,
+  TileLayer,
+  ZoomControl,
+} from "react-leaflet";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+import "leaflet/dist/leaflet.css";
+
+import {
   ApiError,
   getClusters,
   getEarthquakes,
@@ -156,55 +175,50 @@ function FilterBar({ draft, setDraft, onSubmit, onReset, loading }) {
 }
 
 function DistributionBars({ items, labelKey, valueKey, color = "blue", emptyText }) {
-  const max = Math.max(...(items || []).map((item) => Number(item[valueKey]) || 0), 1);
   if (!items?.length) return <p className="empty-state">{emptyText || "No distribution is available."}</p>;
-
+  const fill = color === "coral" ? "#ff8f8f" : color === "teal" ? "#66d9c2" : "#6db5ff";
   return (
-    <div className="bar-list">
-      {items.map((item) => {
-        const value = Number(item[valueKey]) || 0;
-        return (
-          <div className="bar-row" key={String(item[labelKey])}>
-            <div className="bar-label" title={String(item[labelKey])}>
-              {String(item[labelKey])}
-            </div>
-            <div className="bar-track">
-              <div
-                className={`bar-fill bar-${color}`}
-                style={{ width: `${Math.max((value / max) * 100, value ? 3 : 0)}%` }}
-              />
-            </div>
-            <div className="bar-value">{formatNumber(value)}</div>
-          </div>
-        );
-      })}
+    <div className="recharts-box distribution-chart">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={items} layout="vertical" margin={{ top: 0, right: 8, bottom: 0, left: 0 }}>
+          <CartesianGrid stroke="rgba(190, 211, 236, 0.09)" horizontal={false} />
+          <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: "#8f9eb2", fontSize: 10 }} />
+          <YAxis type="category" dataKey={labelKey} width={92} axisLine={false} tickLine={false} tick={{ fill: "#8f9eb2", fontSize: 10 }} />
+          <Tooltip
+            cursor={{ fill: "rgba(190, 211, 236, 0.06)" }}
+            contentStyle={{ background: "#172438", border: "1px solid rgba(190, 211, 236, 0.18)", borderRadius: 8, color: "#e7edf5", fontSize: 12 }}
+            formatter={(value) => [formatNumber(value), "Records"]}
+          />
+          <Bar dataKey={valueKey} fill={fill} radius={[0, 5, 5, 0]} barSize={12} />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 }
 
 function MonthlyChart({ items }) {
-  const max = Math.max(...(items || []).map((item) => Number(item.earthquake_count) || 0), 1);
   if (!items?.length) return <p className="empty-state">No monthly activity is available.</p>;
-
   return (
-    <div className="monthly-chart" aria-label="Earthquake records by month">
-      {items.map((item) => {
-        const value = Number(item.earthquake_count) || 0;
-        return (
-          <div className="month-column" key={item.month} title={`${item.month}: ${value} records`}>
-            <div className="month-value">{value}</div>
-            <div className="month-track">
-              <div className="month-fill" style={{ height: `${Math.max((value / max) * 100, value ? 4 : 0)}%` }} />
-            </div>
-            <div className="month-label">{item.month.slice(5)}</div>
-          </div>
-        );
-      })}
+    <div className="recharts-box monthly-recharts" aria-label="Earthquake records by month">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={items} margin={{ top: 8, right: 4, bottom: 0, left: -18 }}>
+          <CartesianGrid stroke="rgba(190, 211, 236, 0.09)" vertical={false} />
+          <XAxis dataKey="month" tickFormatter={(value) => value.slice(5)} axisLine={false} tickLine={false} tick={{ fill: "#8f9eb2", fontSize: 10 }} />
+          <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: "#8f9eb2", fontSize: 10 }} />
+          <Tooltip
+            cursor={{ fill: "rgba(109, 181, 255, 0.08)" }}
+            contentStyle={{ background: "#172438", border: "1px solid rgba(190, 211, 236, 0.18)", borderRadius: 8, color: "#e7edf5", fontSize: 12 }}
+            labelFormatter={(label) => `Month: ${label}`}
+            formatter={(value) => [formatNumber(value), "Records"]}
+          />
+          <Bar dataKey="earthquake_count" fill="#6db5ff" radius={[5, 5, 0, 0]} barSize={18} />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 }
 
-function CoordinateMap({ assignments }) {
+function LegacyCoordinateMap({ assignments }) {
   const width = 760;
   const height = 390;
   const padding = { top: 28, right: 24, bottom: 46, left: 52 };
@@ -270,6 +284,59 @@ function CoordinateMap({ assignments }) {
         <span className="map-count">{validPoints.length} plotted records</span>
       </div>
       <p className="map-footnote">Coordinates are plotted from the API response; this view is not a basemap or a hazard boundary.</p>
+    </div>
+  );
+}
+
+function CoordinateMap({ assignments }) {
+  const points = assignments || [];
+  const clusterColors = ["#66d9c2", "#f4b860", "#ff7d9d", "#9b8cff", "#6db5ff", "#d7e27e"];
+  const validPoints = points.filter(
+    (point) => Number.isFinite(Number(point.longitude)) && Number.isFinite(Number(point.latitude)),
+  );
+
+  return (
+    <div className="map-wrap">
+      <MapContainer
+        className="leaflet-map"
+        center={[12, 122]}
+        zoom={5}
+        minZoom={4}
+        maxZoom={10}
+        scrollWheelZoom
+        zoomControl={false}
+        preferCanvas
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <ZoomControl position="bottomright" />
+        {validPoints.map((point, index) => {
+          const cluster = Number(point.cluster_label);
+          const color = clusterColors[Number.isFinite(cluster) ? cluster % clusterColors.length : 0];
+          return (
+            <CircleMarker
+              key={`${point.event_id || point.source_event_id}-${index}`}
+              center={[Number(point.latitude), Number(point.longitude)]}
+              radius={5}
+              pathOptions={{ color: "#e8fbf7", weight: 1, fillColor: color, fillOpacity: 0.82 }}
+            >
+              <Popup>
+                <strong>{point.source_event_id || "Earthquake event"}</strong><br />
+                Cluster {point.cluster_label}<br />
+                {Number(point.latitude).toFixed(3)}°N, {Number(point.longitude).toFixed(3)}°E
+              </Popup>
+            </CircleMarker>
+          );
+        })}
+      </MapContainer>
+      <div className="map-legend">
+        <span><i className="legend-dot dot-cluster-a" /> Cluster 0</span>
+        <span><i className="legend-dot dot-cluster-b" /> Cluster 1</span>
+        <span className="map-count">{validPoints.length} plotted records</span>
+      </div>
+      <p className="map-footnote">Leaflet tiles provide geographic context. Points come from the API response; this is not a hazard boundary.</p>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 # Project Status
 
 **Last updated:** 2026-11-15  
-**Current phase:** Phase 8 — React Development implementation complete; PostgreSQL connection pending
+**Current phase:** Phase 9 — Frontend and Backend Integration implementation complete; PostgreSQL connection pending
 **Frontend development:** Dashboard implemented and production build verified
 
 ## Authoritative dataset policy
@@ -61,6 +61,10 @@ See [DATASET_TRANSITION_POLICY.md](docs/DATASET_TRANSITION_POLICY.md) for the co
 - Added source references, scientific disclaimer, provisional-data labeling, loading states, and database-unavailable error handling.
 - Extended the summary API response to preserve chart-ready magnitude, depth, and province distributions.
 - Verified the frontend production build with Vite.
+- Added Leaflet and React-Leaflet for the geographic map with clustered event popups.
+- Added Recharts for monthly, magnitude, and depth distributions.
+- Implemented and source-reviewed synchronized dashboard requests and reset behavior for the dataset-relative default range.
+- Split mapping and chart vendor bundles for a cleaner production build.
 
 ## Previous baseline audit findings
 
@@ -136,6 +140,12 @@ The API tests use isolated SQLite and do not modify the original downloaded file
 The React dashboard is operational at the application-code level. It loads the Phase 7 API, keeps filter state in one place, renders server-derived statistics, plots returned event coordinates and cluster labels, and responds to narrow screens. When the API or database is unavailable, the interface explains the condition without fabricating statistics.
 
 The production bundle was verified with `npm.cmd run build`. The frontend remains explicitly labeled as a provisional USGS 2025 development view, and the original downloaded files were not modified.
+
+## Phase 9 result
+
+The React and FastAPI integration is complete at the application-code level. Leaflet renders API-returned coordinates with popups and map controls; Recharts renders API-derived distributions; one applied filter object drives all event and analytics requests; and reset restores the default 2025 range. The frontend API base URL can be configured through `frontend/.env.example`.
+
+Verification passed through the production build and backend regression suite. A native browser smoke check was attempted, but the computer-use approval timed out before a browser window could be opened; no unverified visual interaction result is being claimed. Live PostgreSQL-backed data testing remains pending until local credentials and imported records are available.
 
 ## Phase 2 result
 
