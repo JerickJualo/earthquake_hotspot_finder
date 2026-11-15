@@ -1,7 +1,7 @@
 # Project Status
 
 **Last updated:** 2026-11-15  
-**Current phase:** Phase 5 — Machine Learning complete  
+**Current phase:** Phase 6 — Database Development implementation complete; PostgreSQL connection pending  
 **Frontend development:** Not started
 
 ## Authoritative dataset policy
@@ -48,6 +48,10 @@ See [DATASET_TRANSITION_POLICY.md](docs/DATASET_TRANSITION_POLICY.md) for the co
 - Evaluated K=2 through K=8 with inertia, silhouette, Calinski-Harabasz, and Davies-Bouldin metrics.
 - Generated cluster labels, summaries, metadata, visualizations, and clustering documentation.
 - Added clustering edge-case tests.
+- Designed the provenance-safe PostgreSQL schema with import, event, cluster-run, and assignment tables.
+- Added the initial Alembic migration and SQLAlchemy models.
+- Implemented controlled processed-data import, idempotency, replacement protection, and verification commands.
+- Added SQLite-backed database integration tests; PostgreSQL migration SQL was validated offline.
 
 ## Previous baseline audit findings
 
@@ -105,6 +109,12 @@ Artifacts:
 - `docs/clustering/cluster_evaluation.csv`
 - `docs/clustering/cluster_summaries.csv`
 - `docs/clustering/figures/`
+
+## Phase 6 result
+
+The database implementation is complete and ready for the local PostgreSQL credential to be configured. The migration creates four tables with foreign keys, uniqueness protection, and query indexes. The importer is tested against SQLite and is designed to import the current 794-record clustered development dataset with 772 cluster assignments. The real PostgreSQL migration/import could not be executed in this workspace because `.env` still has the `CHANGE_ME` password placeholder.
+
+See [DATABASE.md](docs/DATABASE.md) for the safe setup and verification procedure.
 
 ## Phase 2 result
 

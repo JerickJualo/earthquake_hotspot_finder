@@ -33,5 +33,21 @@ class Settings(BaseSettings):
 
         return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
 
+    @property
+    def database_url_is_configured(self) -> bool:
+        """Return whether the placeholder database password was replaced."""
+
+        return "CHANGE_ME" not in self.database_url
+
+    def require_configured_database_url(self) -> str:
+        """Return the database URL or raise an actionable configuration error."""
+
+        if not self.database_url_is_configured:
+            raise RuntimeError(
+                "DATABASE_URL is not configured. Copy .env.example to .env and replace "
+                "CHANGE_ME with the local PostgreSQL password; credentials must not be committed."
+            )
+        return self.database_url
+
 
 settings = Settings()
