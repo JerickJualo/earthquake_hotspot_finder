@@ -1,8 +1,9 @@
 # Project Status
 
 **Last updated:** 2026-11-15  
-**Current phase:** Phase 9 — Frontend and Backend Integration implementation complete; PostgreSQL connection pending
-**Frontend development:** Dashboard implemented and production build verified
+**Current phase:** Phase 10 — Final Testing and Documentation complete; PostgreSQL connection pending
+**Frontend development:** Introduction landing page, Map Dashboard, and production build verified
+**Database status:** Local PostgreSQL migration, import, and verification completed successfully
 
 ## Authoritative dataset policy
 
@@ -65,6 +66,15 @@ See [DATASET_TRANSITION_POLICY.md](docs/DATASET_TRANSITION_POLICY.md) for the co
 - Added Recharts for monthly, magnitude, and depth distributions.
 - Implemented and source-reviewed synchronized dashboard requests and reset behavior for the dataset-relative default range.
 - Split mapping and chart vendor bundles for a cleaner production build.
+- Refined the dashboard into a map-first workspace with side-peek controls so secondary visuals open without reflowing the Spatial View.
+- Added an introduction landing page and a dedicated Map Dashboard navigation state.
+- Made the Map Dashboard portrait-oriented with a Philippines-constrained Leaflet view and magnitude-aware, metadata-rich event popups.
+- Kept secondary visuals in absolute side peeks so opening them does not move or resize the map canvas.
+- Added executable frontend tests for API query serialization, safe API errors, filter edits, submit/reset callbacks, and loading states.
+- Re-ran the backend suite, frontend suite, frontend production build, integration route checks, and repository whitespace validation.
+- Recalculated and cross-checked the provisional USGS 2025 statistics from the cleaned dataset.
+- Reviewed source attribution, scientific disclaimers, historical-date labeling, and PHIVOLCS transition safeguards.
+- Finalized the README, architecture documentation, final validation report, and project status.
 
 ## Previous baseline audit findings
 
@@ -125,7 +135,7 @@ Artifacts:
 
 ## Phase 6 result
 
-The database implementation is complete and ready for the local PostgreSQL credential to be configured. The migration creates four tables with foreign keys, uniqueness protection, and query indexes. The importer is tested against SQLite and is designed to import the current 794-record clustered development dataset with 772 cluster assignments. The real PostgreSQL migration/import could not be executed in this workspace because `.env` still has the `CHANGE_ME` password placeholder.
+The database implementation is complete. The migration creates four tables with foreign keys, uniqueness protection, and query indexes. The current local PostgreSQL database was migrated and imported successfully with 794 earthquake records and 772 cluster assignments.
 
 See [DATABASE.md](docs/DATABASE.md) for the safe setup and verification procedure.
 
@@ -147,9 +157,15 @@ The React and FastAPI integration is complete at the application-code level. Lea
 
 Verification passed through the production build and backend regression suite. A native browser smoke check was attempted, but the computer-use approval timed out before a browser window could be opened; no unverified visual interaction result is being claimed. Live PostgreSQL-backed data testing remains pending until local credentials and imported records are available.
 
-## Phase 2 result
+## Phase 10 result
 
-The development environments are ready for the next implementation phase. PostgreSQL connection configuration exists, but the database schema, migrations, and data import are intentionally deferred until the data-processing rules are finalized.
+The project is locally runnable and documented. The backend suite passes 9 tests, the frontend suite passes 5 tests in 2 files, the Vite production build passes, the FastAPI SQLite integration checks pass, and the provisional earthquake statistics were recalculated from the cleaned dataset. Final architecture and validation details are in [ARCHITECTURE.md](docs/ARCHITECTURE.md) and [FINAL_VALIDATION.md](docs/FINAL_VALIDATION.md).
+
+The remaining release limitation is operational and research-related: PostgreSQL still needs local credentials/schema/import, and PHIVOLCS has not yet been independently inspected and imported. Current USGS findings must remain provisional.
+
+## Historical Phase 2 result
+
+The development environments were prepared before the data-processing and database phases. PostgreSQL connection configuration was present at that time; schema, migrations, and import were implemented in later phases.
 
 ## Dataset transition requirements to carry into later phases
 
@@ -173,7 +189,7 @@ Reusable production logic should remain in Python modules or services. Notebooks
 
 ## Current limitations and next actions
 
-1. Finalize the configurable Philippine spatial scope and offshore-event inclusion policy with the research requirements.
-2. Create the PostgreSQL schema and controlled import process using the canonical fields and provenance identifiers.
-3. Add PHIVOLCS as a separately inspected source adapter when the catalogue becomes available.
+1. Configure the local PostgreSQL password, run the migration, import the processed development dataset, and verify `/api/v1/system/ready`.
+2. Finalize the configurable Philippine spatial scope and offshore-event inclusion policy with the research requirements.
+3. Add PHIVOLCS as a separately inspected source adapter when the catalogue becomes available, then rerun all data-dependent analyses and tests.
 

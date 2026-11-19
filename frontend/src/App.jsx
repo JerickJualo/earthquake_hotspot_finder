@@ -49,6 +49,11 @@ const STATUS_COLORS = {
   outside_study_scope_candidate: "#f27d92",
 };
 
+const PHILIPPINES_BOUNDS = [
+  [4.2, 116.5],
+  [21.6, 127.5],
+];
+
 function formatNumber(value, digits = 0) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return "—";
   return Number(value).toLocaleString(undefined, {
@@ -94,7 +99,7 @@ function SummaryCard({ label, value, detail, accent = "blue" }) {
   );
 }
 
-function FilterBar({ draft, setDraft, onSubmit, onReset, loading }) {
+export function FilterBar({ draft, setDraft, onSubmit, onReset, loading }) {
   function update(key, value) {
     setDraft((current) => ({ ...current, [key]: value }));
   }
@@ -299,10 +304,14 @@ function CoordinateMap({ assignments }) {
     <div className="map-wrap">
       <MapContainer
         className="leaflet-map"
-        center={[12, 122]}
-        zoom={5}
-        minZoom={4}
+        center={[12.8797, 121.774]}
+        zoom={5.5}
+        minZoom={5}
         maxZoom={10}
+        bounds={PHILIPPINES_BOUNDS}
+        maxBounds={PHILIPPINES_BOUNDS}
+        maxBoundsViscosity={1}
+        worldCopyJump={false}
         scrollWheelZoom
         zoomControl={false}
         preferCanvas
@@ -315,15 +324,20 @@ function CoordinateMap({ assignments }) {
         {validPoints.map((point, index) => {
           const cluster = Number(point.cluster_label);
           const color = clusterColors[Number.isFinite(cluster) ? cluster % clusterColors.length : 0];
+          const magnitude = Number(point.magnitude);
+          const radius = Number.isFinite(magnitude) ? Math.max(4, Math.min(10, (magnitude - 3.5) * 2.1)) : 5;
           return (
             <CircleMarker
               key={`${point.event_id || point.source_event_id}-${index}`}
               center={[Number(point.latitude), Number(point.longitude)]}
-              radius={5}
-              pathOptions={{ color: "#e8fbf7", weight: 1, fillColor: color, fillOpacity: 0.82 }}
+              radius={radius}
+              pathOptions={{ color: "#f5fbff", weight: 1.25, fillColor: color, fillOpacity: 0.86 }}
             >
               <Popup>
                 <strong>{point.source_event_id || "Earthquake event"}</strong><br />
+                {point.occurred_at ? formatDateTime(point.occurred_at) : "Time unavailable"}<br />
+                Magnitude {formatNumber(point.magnitude, 1)} · Depth {point.depth_km === null || point.depth_km === undefined ? "—" : `${formatNumber(point.depth_km, 1)} km`}<br />
+                {point.province_name || STATUS_LABELS[point.geographic_assignment_status] || "Unassigned"}<br />
                 Cluster {point.cluster_label}<br />
                 {Number(point.latitude).toFixed(3)}°N, {Number(point.longitude).toFixed(3)}°E
               </Popup>
@@ -336,7 +350,7 @@ function CoordinateMap({ assignments }) {
         <span><i className="legend-dot dot-cluster-b" /> Cluster 1</span>
         <span className="map-count">{validPoints.length} plotted records</span>
       </div>
-      <p className="map-footnote">Leaflet tiles provide geographic context. Points come from the API response; this is not a hazard boundary.</p>
+      <p className="map-footnote">The view is constrained to the Philippines geographic extent. Marker size reflects magnitude; color identifies the K-Means cluster. This is not a hazard boundary.</p>
     </div>
   );
 }
@@ -400,13 +414,136 @@ function RecentEvents({ events }) {
   );
 }
 
+const INSIGHT_ITEMS = [
+  { id: "scope", label: "Scope", short: "SC" },
+  { id: "temporal", label: "Monthly", short: "MO" },
+  { id: "magnitude", label: "Magnitude", short: "MG" },
+  { id: "depth", label: "Depth", short: "DP" },
+  { id: "provinces", label: "Provinces", short: "PR" },
+  { id: "clusters", label: "Clusters", short: "CL" },
+  { id: "records", label: "Records", short: "RE" },
+];
+
+export function InsightRail({ active, onSelect }) {
+  return (
+    <nav className="insight-rail" aria-label="Open analytical views">
+      <p className="rail-label">Peek</p>
+      {INSIGHT_ITEMS.map((item) => (
+        <button
+          className={`rail-button ${active === item.id ? "rail-button-active" : ""}`}
+          type="button"
+          key={item.id}
+          aria-label={`Open ${item.label} side peek`}
+          aria-pressed={active === item.id}
+          onClick={() => onSelect(active === item.id ? null : item.id)}
+        >
+          <span className="rail-icon">{item.short}</span>
+          <span>{item.label}</span>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+function InsightPeek({ active, summary, dashboard, onClose }) {
+  if (!active) return null;
+
+  const item = INSIGHT_ITEMS.find((entry) => entry.id === active);
+  let content;
+  if (active === "scope") {
+    content = (
+      <>
+        <p className="panel-copy">Only points intersecting an ADM2 polygon receive a province. Offshore and nearby-country records remain visible as separate statuses.</p>
+        <StatusBreakdown counts={summary.geographic_assignment_counts} />
+        <div className="mini-callout"><strong>{formatNumber(summary.assigned_province_count)}</strong><span>unique provinces represented in the filtered view</span></div>
+      </>
+    );
+  } else if (active === "temporal") {
+    content = <MonthlyChart items={summary.monthly_activity} />;
+  } else if (active === "magnitude") {
+    content = <DistributionBars items={summary.magnitude_distribution} labelKey="magnitude_bin" valueKey="earthquake_count" color="coral" />;
+  } else if (active === "depth") {
+    content = <DistributionBars items={summary.depth_distribution} labelKey="depth_bin" valueKey="earthquake_count" color="teal" />;
+  } else if (active === "provinces") {
+    content = <ProvinceRanking provinces={dashboard.provinces} />;
+  } else if (active === "clusters") {
+    content = (
+      <>
+        <div className="cluster-summary-list">{dashboard.clusters.summaries.map((cluster) => <div className="cluster-summary" key={cluster.cluster_label}><span className="cluster-swatch" style={{ background: ["#66d9c2", "#f4b860", "#ff7d9d", "#9b8cff"][cluster.cluster_label % 4] }} /><div><strong>Cluster {cluster.cluster_label}</strong><span>{formatNumber(cluster.record_count)} records - mean M {formatNumber(cluster.mean_magnitude, 2)}</span></div><b>{formatNumber(cluster.percentage_of_clustered_records, 1)}%</b></div>)}</div>
+        <p className="small-note">Cluster labels are identifiers, not rankings. K-Means uses projected coordinates only.</p>
+      </>
+    );
+  } else if (active === "records") {
+    content = <RecentEvents events={dashboard.events.data} />;
+  }
+
+  return (
+    <aside className="insight-peek" aria-label={`${item.label} details`}>
+      <div className="peek-heading">
+        <div><p className="section-kicker">Side peek</p><h2>{item.label}</h2></div>
+        <button className="peek-close" type="button" onClick={onClose} aria-label="Close side peek">×</button>
+      </div>
+      {content}
+    </aside>
+  );
+}
+
+function LandingPage({ onOpenDashboard }) {
+  return (
+    <section className="landing-page-content">
+      <div className="landing-hero">
+        <div className="landing-copy">
+          <p className="eyebrow">Philippine earthquake analytics</p>
+          <h1>Read the pattern.<br /><em>Question the conclusion.</em></h1>
+          <p className="intro-copy">Explore where and when earthquake records appear across the Philippines through a transparent, map-first research workspace.</p>
+          <button className="primary-button landing-cta" type="button" onClick={onOpenDashboard}>Open Map Dashboard <span aria-hidden="true">→</span></button>
+        </div>
+        <div className="landing-note">
+          <span className="note-icon">i</span>
+          <div><strong>Provisional development view</strong><br />The current dashboard uses the USGS 2025 development dataset. It describes records and spatial groupings; it does not predict earthquakes or measure hazard.</div>
+        </div>
+      </div>
+
+      <div className="landing-highlights" aria-label="Dashboard capabilities">
+        <article className="landing-highlight"><span className="highlight-number">01</span><h2>See the geography</h2><p>Keep the Philippines spatial view in focus while the supporting analyses open as side peeks.</p></article>
+        <article className="landing-highlight"><span className="highlight-number">02</span><h2>Trace the inputs</h2><p>Follow the imported USGS records, ADM2 province assignments, and source references used by the application.</p></article>
+        <article className="landing-highlight"><span className="highlight-number">03</span><h2>Explore carefully</h2><p>Apply shared date, magnitude, and geographic-scope filters before interpreting distributions or clusters.</p></article>
+      </div>
+
+      <div className="landing-how">
+        <p className="section-kicker">How to use it</p>
+        <div className="how-steps"><span><b>Filter</b> choose the record window</span><span><b>Observe</b> inspect the map and side peeks</span><span><b>Question</b> read results as provisional evidence</span></div>
+      </div>
+    </section>
+  );
+}
+
 function App() {
+  const [page, setPage] = useState(() => (window.location.hash === "#dashboard" ? "dashboard" : "landing"));
   const [draftFilters, setDraftFilters] = useState(DEFAULT_FILTERS);
   const [appliedFilters, setAppliedFilters] = useState(DEFAULT_FILTERS);
   const [dashboard, setDashboard] = useState(null);
   const [backendState, setBackendState] = useState("checking");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeInsight, setActiveInsight] = useState(null);
+
+  const navigateTo = useCallback((nextPage) => {
+    const nextHash = nextPage === "dashboard" ? "#dashboard" : window.location.pathname;
+    window.history.pushState({}, "", nextHash);
+    setPage(nextPage);
+    if (nextPage === "landing") setActiveInsight(null);
+  }, []);
+
+  useEffect(() => {
+    const syncPage = () => setPage(window.location.hash === "#dashboard" ? "dashboard" : "landing");
+    window.addEventListener("popstate", syncPage);
+    window.addEventListener("hashchange", syncPage);
+    return () => {
+      window.removeEventListener("popstate", syncPage);
+      window.removeEventListener("hashchange", syncPage);
+    };
+  }, []);
 
   const loadDashboard = useCallback(async (filters) => {
     setLoading(true);
@@ -435,8 +572,9 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (page !== "dashboard") return;
     loadDashboard(appliedFilters);
-  }, [appliedFilters, loadDashboard]);
+  }, [page, appliedFilters, loadDashboard]);
 
   const summary = dashboard?.summary;
   const activeRange = useMemo(
@@ -457,19 +595,32 @@ function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="Earthquake Hotspot Finder home">
+        <button className="brand brand-button" type="button" onClick={() => navigateTo("landing")} aria-label="Open Earthquake Hotspot Finder introduction">
           <span className="brand-mark"><span /></span>
           <span><strong>Earthquake</strong> Hotspot Finder</span>
-        </a>
+        </button>
         <div className="topbar-meta">
+          <button className="header-nav-button" type="button" onClick={() => navigateTo(page === "dashboard" ? "landing" : "dashboard")}>
+            {page === "dashboard" ? "Introduction" : "Map Dashboard"}
+          </button>
+          {page === "dashboard" ? (
           <span className={`connection-pill connection-${backendState}`}>
             <i /> {backendState === "connected" ? "API connected" : backendState === "database-pending" ? "Database pending" : backendState === "checking" ? "Connecting" : "API unavailable"}
           </span>
+          ) : <span className="connection-pill connection-connected"><i /> Explore overview</span>}
           <span className="dataset-pill">USGS · 2025 development dataset</span>
         </div>
       </header>
 
-      <main className="dashboard">
+      <main className={`dashboard ${page === "dashboard" ? "dashboard-page" : "landing-page"}`}>
+        {page === "landing" ? (
+          <LandingPage onOpenDashboard={() => navigateTo("dashboard")} />
+        ) : (
+          <>
+        <section className="dashboard-context-header">
+          <div><p className="eyebrow">Map Dashboard</p><h1>Spatial view</h1><p className="intro-copy">The Philippines map stays in place while filters and supporting analyses open around it.</p></div>
+          <div className="dashboard-context-note"><span className="note-icon">+</span><span>Use the peek buttons on the map to inspect distributions, province activity, clusters, scope, and records.</span></div>
+        </section>
         <section className="dashboard-intro">
           <div>
             <p className="eyebrow">Philippine earthquake analytics</p>
@@ -508,6 +659,7 @@ function App() {
               <SummaryCard label="Spatial clusters" value={`K = ${dashboard.clusters.selected_k}`} detail={`${formatNumber(dashboard.clusters.eligible_record_count)} eligible records`} accent="violet" />
             </section>
 
+            {/* Legacy stacked panels replaced by the map-first side-peek workspace below.
             <section className="content-grid map-grid-section">
               <article className="panel map-panel">
                 <div className="panel-heading"><div><p className="section-kicker">Spatial view</p><h2>Where records cluster</h2></div><span className="metric-chip">Silhouette {formatNumber(dashboard.clusters.silhouette_score, 3)}</span></div>
@@ -533,8 +685,24 @@ function App() {
             </section>
 
             <section className="panel recent-panel"><div className="panel-heading"><div><p className="section-kicker">Record detail</p><h2>Latest records in view</h2></div><span className="panel-unit">sorted by UTC time</span></div><RecentEvents events={dashboard.events.data} /></section>
+            */}
+            <section className="visual-workspace" aria-label="Spatial view and analytical side peeks">
+              <article className="panel map-panel main-map-panel">
+                <div className="panel-heading"><div><p className="section-kicker">Spatial view</p><h2>Where records cluster</h2></div><span className="metric-chip">Silhouette {formatNumber(dashboard.clusters.silhouette_score, 3)}</span></div>
+                <CoordinateMap assignments={dashboard.clusters.assignments} />
+                <div className="map-metrics">
+                  <span><strong>{formatNumber(dashboard.clusters.eligible_record_count)}</strong> plotted eligible records</span>
+                  <span><strong>{formatNumber(dashboard.clusters.excluded_record_count)}</strong> outside clustering scope</span>
+                  <span><strong>K = {dashboard.clusters.selected_k}</strong> selected spatial groups</span>
+                </div>
+              </article>
+              <InsightRail active={activeInsight} onSelect={setActiveInsight} />
+              <InsightPeek active={activeInsight} summary={summary} dashboard={dashboard} onClose={() => setActiveInsight(null)} />
+            </section>
           </>
         ) : null}
+          </>
+        )}
 
         <section className="footer-grid">
           <article className="footer-card"><p className="section-kicker">Sources</p><h2>Trace the inputs</h2><p>Results are built from the imported canonical event records and ADM2 geographic assignments.</p><div className="source-links"><a href="https://earthquake.usgs.gov/earthquakes/search/" target="_blank" rel="noreferrer">USGS Earthquake Catalog ↗</a><a href="https://www.geoboundaries.org/" target="_blank" rel="noreferrer">geoBoundaries ↗</a><a href="https://www.phivolcs.dost.gov.ph/" target="_blank" rel="noreferrer">PHIVOLCS · preferred final source ↗</a></div></article>

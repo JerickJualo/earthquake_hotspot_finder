@@ -90,7 +90,18 @@ def geographic_clusters(
         assignments = dataframe_records(
             clustered.loc[
                 clustered["cluster_label"].notna(),
-                ["event_id", "source_event_id", "cluster_label", "latitude", "longitude"],
+                [
+                    "event_id",
+                    "source_event_id",
+                    "cluster_label",
+                    "latitude",
+                    "longitude",
+                    "occurred_at",
+                    "magnitude",
+                    "depth_km",
+                    "province_name",
+                    "geographic_assignment_status",
+                ],
             ]
         )
     return ClusterAnalysisResponse(

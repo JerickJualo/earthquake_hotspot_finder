@@ -21,9 +21,11 @@ Phase 6 now provides the PostgreSQL schema, Alembic migration, SQLAlchemy models
 
 Phase 7 now provides database-backed FastAPI endpoints for earthquake records, shared filtering, descriptive summaries, province activity, on-demand K-Means analysis, readiness checks, safe error handling, and backend tests. See [the API documentation](docs/API.md).
 
-Phase 8 now provides the responsive React dashboard: shared filters, summary cards, server-derived charts, coordinate map, cluster summaries, provincial rankings, source references, and scientific disclaimers.
+Phase 8 now provides the responsive React dashboard: shared filters, summary cards, server-derived charts, a map-first Spatial View, side-peek analytical panels, provincial rankings, source references, and scientific disclaimers.
 
 Phase 9 now connects the dashboard to FastAPI through one shared filter state, uses Leaflet for the geographic view and Recharts for analytical charts, and verifies the frontend production integration. Copy `frontend/.env.example` to `frontend/.env` only when the API is running at a non-default URL.
+
+Phase 10 finalizes the test and documentation workflow. Backend tests, frontend tests, production build, API integration checks, provisional-statistics verification, source attribution review, and scientific-disclaimer review are documented in [FINAL_VALIDATION.md](docs/FINAL_VALIDATION.md). The system architecture is documented in [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 The current USGS 2025 data is provisional development data. The planned transition to the preferred PHIVOLCS research dataset is governed by [the dataset transition policy](docs/DATASET_TRANSITION_POLICY.md). The application must keep source provenance, canonical schema mapping, raw/processed/imported data separation, and controlled dataset replacement independent of any one provider.
 
@@ -58,7 +60,7 @@ The current USGS 2025 data is provisional development data. The planned transiti
 
    The frontend defaults to `http://localhost:8000` for FastAPI. Copy `frontend/.env.example` to `frontend/.env` and change `VITE_API_BASE_URL` only when using another backend URL.
 
-6. Open the Vite URL shown in the terminal. The starter page checks `http://localhost:8000/health`.
+6. Open the Vite URL shown in the terminal. The dashboard checks FastAPI health and database readiness, then loads the filtered analytical view.
 
 ## Verification
 
@@ -79,6 +81,13 @@ Frontend production build:
 ```powershell
 cd frontend
 npm.cmd run build
+```
+
+Frontend tests:
+
+```powershell
+cd frontend
+npm.cmd test
 ```
 
 Run the Phase 3 data pipeline from the backend directory:
@@ -111,5 +120,7 @@ See [clustering methods](docs/CLUSTERING_METHODS.md) and [clustering findings](d
 See [database documentation](docs/DATABASE.md) for migration, import, replacement, and verification commands.
 
 See [API documentation](docs/API.md) for endpoint parameters, response behavior, error handling, and API test commands.
+
+See [final validation](docs/FINAL_VALIDATION.md) for verified provisional statistics, test results, attribution review, limitations, and release status. See [architecture documentation](docs/ARCHITECTURE.md) for the data flow and component responsibilities.
 
 The database schema, migration, and import commands are implemented. Live PostgreSQL execution remains a local setup step until `.env` contains the user's PostgreSQL password. `/health` verifies that the API process is running; `/api/v1/system/ready` verifies database readiness.

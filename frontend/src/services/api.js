@@ -8,7 +8,7 @@ export class ApiError extends Error {
   }
 }
 
-function queryString(params = {}) {
+export function queryString(params = {}) {
   const search = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
